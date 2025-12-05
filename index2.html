@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>School App</title>
+<style>
+    body {
+        margin: 0;
+        font-family: "Georgia", serif;
+        background: #0033ff;
+        color: white;
+        text-align: center;
+    }
+
+    .container {
+        width: 350px;
+        margin: auto;
+        padding-top: 20px;
+    }
+
+    img.logo {
+        width: 120px;
+        margin-bottom: 20px;
+    }
+
+    h2 {
+        font-size: 22px;
+        text-decoration: underline;
+    }
+
+    input {
+        width: 80%;
+        padding: 8px;
+        border-radius: 15px;
+        border: none;
+        margin-top: 8px;
+        margin-bottom: 15px;
+        font-size: 16px;
+    }
+
+    button {
+        background: white;
+        color: #0033ff;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 20px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .home-icon {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 50px;
+        cursor: pointer;
+    }
+
+    .profile-pic {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 20%;
+        float: right;
+        margin-right: 20px;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- PAGE ACCUEIL -->
+    <div id="page-accueil">
+        <img src="assets/logoscholl.png" class="logo">
+        <h2>Connexion :</h2>
+        <button onclick="showPage('page-connexion')">Connexion</button><br><br>
+        <h2>Inscription :</h2>
+        <button onclick="showPage('page-inscription')">Inscription</button>
+    </div>
+
+    <!-- PAGE CONNEXION -->
+    <div id="page-connexion" style="display:none;">
+        <h2>Connexion :</h2>
+        <input id="login-username" placeholder="Nom d'utilisateur"><br>
+        <input id="login-password" type="password" placeholder="Mot de passe"><br>
+        <button onclick="login()">Se connecter</button>
+        <img src="assets/house.png" class="home-icon" onclick="showPage('page-accueil')">
+    </div>
+
+    <!-- PAGE INSCRIPTION -->
+    <div id="page-inscription" style="display:none;">
+        <h2>Inscription :</h2>
+        <input id="reg-nom" placeholder="Nom"><br>
+        <input id="reg-prenom" placeholder="Prénom"><br>
+        <input id="reg-username" placeholder="Nom d'utilisateur"><br>
+        <input id="reg-password" type="password" placeholder="Mot de passe"><br>
+        <input id="reg-password2" type="password" placeholder="Répéter le mot de passe"><br>
+        <button onclick="register()">S'inscrire</button>
+        <img src="assets/house.png" class="home-icon" onclick="showPage('page-accueil')">
+    </div>
+
+    <!-- PAGE PROFIL -->
+    <div id="page-profil" style="display:none;">
+        <div class="profile-pic"></div>
+        <h2>Profil :</h2>
+        <p id="profil-nom"></p>
+        <p id="profil-prenom"></p>
+        <p id="profil-age"></p>
+        <p id="profil-points"></p>
+        <p id="profil-rang"></p>
+        <button onclick="showPage('page-exercice')">Faire l'exercice du jour</button>
+        <img src="assets/house.png" class="home-icon" onclick="showPage('page-accueil')">
+    </div>
+
+    <!-- PAGE EXERCICES -->
+    <div id="page-exercice" style="display:none;">
+        <h2>Exercice du jour</h2>
+        <p id="question"></p>
+        <input id="reponse" placeholder="Ta réponse"><br>
+        <button onclick="verifier()">Valider</button>
+        <p id="message"></p>
+        <img src="assets/house.png" class="home-icon" onclick="showPage('page-accueil')">
+    </div>
+
+</div>
+
+<script>
+
+let currentUser = null;
+let resultat = 0;
+
+// Affiche une page
+function showPage(id) {
+    ["page-accueil", "page-connexion", "page-inscription", "page-profil", "page-exercice"]
+    .forEach(p => document.getElementById(p).style.display = "none");
+
+    document.getElementById(id).style.display = "block";
+}
+
+// Déterminer le rang en fonction des points
+function getRank(points) {
+    if (points >= 1000) return "Platine";
+    if (points >= 500) return "Or";
+    if (points >= 250) return "Argent";
+    if (points >= 100) return "Bronze";
+    return "Métal";
+}
+
+// Inscription
+function register() {
+    let user = document.getElementById("reg-username").value;
+    let pass = document.getElementById("reg-password").value;
+    let pass2 = document.getElementById("reg-password2").value;
+
+    if (pass !== pass2) return alert("Les mots de passe ne correspondent pas.");
+
+    let data = {
+        nom: document.getElementById("reg-nom").value,
+        prenom: document.getElementById("reg-prenom").value,
+        age: 16,
+        password: pass,
+        points: 0,
+        lastPlay: null
+    };
+
+    localStorage.setItem(user, JSON.stringify(data));
+    alert("Inscription réussie !");
+    showPage("page-connexion");
+}
+
+// Connexion
+function login() {
+    let user = document.getElementById("login-username").value;
+    let pass = document.getElementById("login-password").value;
+
+    let data = JSON.parse(localStorage.getItem(user));
+
+    if (!data || data.password !== pass)
+        return alert("Identifiants incorrects");
+
+    currentUser = user;
+    afficherProfil(data);
+    showPage("page-profil");
+}
+
+function afficherProfil(data) {
+    document.getElementById("profil-nom").innerHTML = "Nom : " + data.nom;
+    document.getElementById("profil-prenom").innerHTML = "Prénom : " + data.prenom;
+    document.getElementById("profil-age").innerHTML = "Âge : " + data.age + " ans";
+    document.getElementById("profil-points").innerHTML = "Points : " + data.points;
+    document.getElementById("profil-rang").innerHTML = "Rang : " + getRank(data.points);
+}
+
+// Génère un exercice
+function genererExercice() {
+    let a = Math.floor(Math.random() * 20) + 1;
+    let b = Math.floor(Math.random() * 20) + 1;
+    let operations = ["+", "-", "*"];
+    let op = operations[Math.floor(Math.random() * operations.length)];
+
+    resultat = eval(a + op + b);
+    document.getElementById("question").innerHTML = `${a} ${op} ${b} = ?`;
+}
+
+// Vérifie la réponse
+function verifier() {
+    let rep = document.getElementById("reponse").value;
+
+    let data = JSON.parse(localStorage.getItem(currentUser));
+
+    let today = new Date().toLocaleDateString();
+
+    if (data.lastPlay === today) {
+        document.getElementById("message").innerHTML = "❌ Tu as déjà fait l'exercice aujourd'hui !";
+        return;
+    }
+
+    if (parseInt(rep) === resultat) {
+        data.points += 10;
+        data.lastPlay = today;
+        document.getElementById("message").innerHTML = "✔️ Bonne réponse ! +10 points";
+    } else {
+        document.getElementById("message").innerHTML = "❌ Mauvaise réponse";
+    }
+
+    localStorage.setItem(currentUser, JSON.stringify(data));
+    afficherProfil(data);
+}
+
+// Quand on va sur la page exercices
+document.getElementById("page-exercice").addEventListener("click", genererExercice);
+
+</script>
+
+</body>
+</html>
